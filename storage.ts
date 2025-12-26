@@ -1,5 +1,5 @@
 
-import { SeniorCitizen, AuditLog, User, UserRole } from './types';
+import { SeniorCitizen, AuditLog, User, UserRole } from './types.ts';
 
 const STORAGE_KEYS = {
   SENIORS: 'mapatag_seniors',
@@ -22,7 +22,6 @@ export const storage = {
   saveAuditLogs: (logs: AuditLog[]) => {
     localStorage.setItem(STORAGE_KEYS.AUDIT_LOGS, JSON.stringify(logs));
   },
-  // Fixed: Updated parameter type to Pick<AuditLog, 'action' | 'details'> to match how it's called across the app
   addAuditLog: (log: Pick<AuditLog, 'action' | 'details'>, currentUser: User) => {
     const logs = storage.getAuditLogs();
     const newLog: AuditLog = {
@@ -47,7 +46,6 @@ export const storage = {
   }
 };
 
-// Initial Seed Data if empty
 export const seedInitialData = () => {
   if (storage.getSeniors().length === 0) {
     const initialSeniors: SeniorCitizen[] = [

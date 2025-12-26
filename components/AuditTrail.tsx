@@ -1,7 +1,7 @@
 
 import React, { useMemo } from 'react';
 import { History, Search, Download, Shield } from 'lucide-react';
-import { AuditLog } from '../types';
+import { AuditLog } from '../types.ts';
 
 interface AuditTrailProps {
   logs: AuditLog[];

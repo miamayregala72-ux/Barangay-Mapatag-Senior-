@@ -1,9 +1,8 @@
 
 import React, { useState } from 'react';
-// Fixed: Added Edit2 to imports
-import { Search, HeartPulse, Stethoscope, Pill, AlertTriangle, CheckCircle, Save, Plus, X, Edit2 } from 'lucide-react';
-import { SeniorCitizen, User, MedicalInfo } from '../types';
-import { storage } from '../storage';
+import { Search, HeartPulse, Stethoscope, Pill, AlertTriangle, Save, X, Edit2 } from 'lucide-react';
+import { SeniorCitizen, User, MedicalInfo } from '../types.ts';
+import { storage } from '../storage.ts';
 
 interface MedicalRecordsProps {
   seniors: SeniorCitizen[];
@@ -97,7 +96,6 @@ const MedicalRecords: React.FC<MedicalRecordsProps> = ({ seniors, currentUser, o
 
                 <div className="flex items-start gap-3">
                   <div className="p-2 bg-blue-100 text-blue-600 rounded-lg shrink-0">
-                    {/* Fixed: Capitalized Pill component */}
                     <Pill className="w-4 h-4" />
                   </div>
                   <div>
@@ -136,7 +134,6 @@ const MedicalRecords: React.FC<MedicalRecordsProps> = ({ seniors, currentUser, o
         ))}
       </div>
 
-      {/* Edit Health Modal */}
       {editingSenior && medicalForm && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden">

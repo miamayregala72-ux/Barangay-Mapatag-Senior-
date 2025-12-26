@@ -4,9 +4,8 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
   PieChart, Pie, Cell, Legend 
 } from 'recharts';
-// Fixed: Added ShieldCheck to imports
 import { Users, UserCheck, HeartPulse, HandHelping, TrendingUp, ShieldCheck } from 'lucide-react';
-import { SeniorCitizen, AuditLog } from '../types';
+import { SeniorCitizen, AuditLog } from '../types.ts';
 
 interface DashboardProps {
   seniors: SeniorCitizen[];
@@ -49,7 +48,6 @@ const Dashboard: React.FC<DashboardProps> = ({ seniors, logs }) => {
 
   return (
     <div className="space-y-6">
-      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard icon={Users} label="Total Registered" value={stats.total} color="bg-indigo-500" />
         <StatCard icon={UserCheck} label="Avg. Age" value={stats.avgAge} color="bg-amber-500" />
@@ -58,7 +56,6 @@ const Dashboard: React.FC<DashboardProps> = ({ seniors, logs }) => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Age Distribution Chart */}
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
           <div className="flex items-center gap-2 mb-6">
             <TrendingUp className="w-5 h-5 text-indigo-500" />
@@ -77,7 +74,6 @@ const Dashboard: React.FC<DashboardProps> = ({ seniors, logs }) => {
           </div>
         </div>
 
-        {/* Sex Distribution Chart */}
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
           <div className="flex items-center gap-2 mb-6">
             <Users className="w-5 h-5 text-pink-500" />
@@ -95,7 +91,7 @@ const Dashboard: React.FC<DashboardProps> = ({ seniors, logs }) => {
                   paddingAngle={5}
                   dataKey="value"
                 >
-                  {sexData.map((entry, index) => (
+                  {sexData.map((_entry: any, index: number) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
@@ -107,7 +103,6 @@ const Dashboard: React.FC<DashboardProps> = ({ seniors, logs }) => {
         </div>
       </div>
 
-      {/* Recent Activity List */}
       <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
         <h3 className="font-bold text-slate-800 mb-4">Recent Activity Audit</h3>
         <div className="space-y-4">

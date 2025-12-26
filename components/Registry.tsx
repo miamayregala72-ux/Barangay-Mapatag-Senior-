@@ -1,9 +1,8 @@
 
 import React, { useState, useMemo } from 'react';
-// Fixed: Added Users to imports
-import { Search, Plus, UserPlus, Filter, MoreHorizontal, Edit2, Trash2, Eye, X, CheckCircle, Users } from 'lucide-react';
-import { SeniorCitizen, User, UserRole } from '../types';
-import { storage } from '../storage';
+import { Search, Plus, UserPlus, Edit2, Trash2, Eye, X, CheckCircle, Users } from 'lucide-react';
+import { SeniorCitizen, User } from '../types.ts';
+import { storage } from '../storage.ts';
 
 interface RegistryProps {
   seniors: SeniorCitizen[];
@@ -98,7 +97,6 @@ const Registry: React.FC<RegistryProps> = ({ seniors, currentUser, onRefresh }) 
 
   return (
     <div className="space-y-6">
-      {/* Search and Filter Bar */}
       <div className="flex flex-col sm:flex-row items-center gap-4 bg-white p-4 rounded-2xl border border-slate-200">
         <div className="relative flex-1 w-full">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
@@ -119,7 +117,6 @@ const Registry: React.FC<RegistryProps> = ({ seniors, currentUser, onRefresh }) 
         </button>
       </div>
 
-      {/* Grid List */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         {filteredSeniors.map((senior) => (
           <div key={senior.id} className="bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-lg transition-all group">
@@ -144,7 +141,7 @@ const Registry: React.FC<RegistryProps> = ({ seniors, currentUser, onRefresh }) 
                 </div>
               </div>
             </div>
-            <div className="px-5 pb-5 pt-0 flex items-center justify-between border-t border-slate-50 pt-4">
+            <div className="px-5 pb-5 flex items-center justify-between border-t border-slate-50 pt-4">
               <div className="flex items-center gap-4">
                 <button 
                   onClick={() => setSelectedSenior(senior)}
@@ -178,7 +175,6 @@ const Registry: React.FC<RegistryProps> = ({ seniors, currentUser, onRefresh }) 
         )}
       </div>
 
-      {/* Add Modal */}
       {showAddModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
@@ -279,7 +275,6 @@ const Registry: React.FC<RegistryProps> = ({ seniors, currentUser, onRefresh }) 
         </div>
       )}
 
-      {/* Detail Modal */}
       {selectedSenior && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in duration-200">
