@@ -48,7 +48,7 @@ const Dashboard: React.FC<DashboardProps> = ({ seniors, logs }) => {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <StatCard icon={Users} label="Total Registered" value={stats.total} color="bg-indigo-500" />
         <StatCard icon={UserCheck} label="Avg. Age" value={stats.avgAge} color="bg-amber-500" />
         <StatCard icon={HeartPulse} label="Health Alerts" value={3} color="bg-rose-500" />
@@ -56,30 +56,30 @@ const Dashboard: React.FC<DashboardProps> = ({ seniors, logs }) => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+        <div className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm">
           <div className="flex items-center gap-2 mb-6">
             <TrendingUp className="w-5 h-5 text-indigo-500" />
-            <h3 className="font-bold text-slate-800">Age Distribution</h3>
+            <h3 className="font-bold text-slate-800 text-sm sm:text-base">Age Distribution</h3>
           </div>
-          <div className="h-64">
+          <div className="h-48 sm:h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={ageData}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} />
-                <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} />
-                <Tooltip cursor={{fill: '#f8fafc'}} contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}} />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 10}} />
+                <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 10}} />
+                <Tooltip cursor={{fill: '#f8fafc'}} contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '10px'}} />
                 <Bar dataKey="count" fill="#6366f1" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+        <div className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm">
           <div className="flex items-center gap-2 mb-6">
             <Users className="w-5 h-5 text-pink-500" />
-            <h3 className="font-bold text-slate-800">Gender Distribution</h3>
+            <h3 className="font-bold text-slate-800 text-sm sm:text-base">Gender Distribution</h3>
           </div>
-          <div className="h-64">
+          <div className="h-48 sm:h-64">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
@@ -96,31 +96,31 @@ const Dashboard: React.FC<DashboardProps> = ({ seniors, logs }) => {
                   ))}
                 </Pie>
                 <Tooltip />
-                <Legend iconType="circle" />
+                <Legend iconType="circle" wrapperStyle={{fontSize: '12px'}} />
               </PieChart>
             </ResponsiveContainer>
           </div>
         </div>
       </div>
 
-      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-        <h3 className="font-bold text-slate-800 mb-4">Recent Activity Audit</h3>
+      <div className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm">
+        <h3 className="font-bold text-slate-800 mb-4 text-sm sm:text-base">Recent Activity</h3>
         <div className="space-y-4">
           {logs.slice(0, 5).map((log) => (
-            <div key={log.id} className="flex items-start gap-4 p-3 rounded-xl bg-slate-50 border border-slate-100">
-              <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center border border-slate-200 shrink-0">
-                <ShieldCheck className="w-5 h-5 text-slate-400" />
+            <div key={log.id} className="flex items-start gap-3 sm:gap-4 p-3 rounded-xl bg-slate-50 border border-slate-100">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-white flex items-center justify-center border border-slate-200 shrink-0">
+                <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5 text-slate-400" />
               </div>
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 <div className="flex justify-between items-start">
-                  <p className="font-bold text-slate-800 text-sm">{log.userName}</p>
-                  <span className="text-[10px] text-slate-400 font-medium">{new Date(log.timestamp).toLocaleTimeString()}</span>
+                  <p className="font-bold text-slate-800 text-xs sm:text-sm truncate">{log.userName}</p>
+                  <span className="text-[9px] sm:text-[10px] text-slate-400 font-medium shrink-0 ml-2">{new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                 </div>
-                <p className="text-xs text-slate-600 mt-1"><span className="font-bold text-indigo-600">{log.action}:</span> {log.details}</p>
+                <p className="text-[11px] sm:text-xs text-slate-600 mt-1 line-clamp-2"><span className="font-bold text-indigo-600">{log.action}:</span> {log.details}</p>
               </div>
             </div>
           ))}
-          {logs.length === 0 && <p className="text-center text-slate-400 py-4">No recent activities.</p>}
+          {logs.length === 0 && <p className="text-center text-slate-400 py-4 text-sm">No recent activities.</p>}
         </div>
       </div>
     </div>
@@ -128,14 +128,14 @@ const Dashboard: React.FC<DashboardProps> = ({ seniors, logs }) => {
 };
 
 const StatCard = ({ icon: Icon, label, value, color }: { icon: any, label: string, value: string | number, color: string }) => (
-  <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-    <div className="flex items-center gap-4">
-      <div className={`p-3 rounded-xl ${color} text-white`}>
-        <Icon className="w-6 h-6" />
+  <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+    <div className="flex items-center gap-3 sm:gap-4">
+      <div className={`p-2 sm:p-3 rounded-xl ${color} text-white`}>
+        <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
       </div>
-      <div>
-        <p className="text-sm font-medium text-slate-400">{label}</p>
-        <p className="text-2xl font-bold text-slate-800">{value}</p>
+      <div className="min-w-0">
+        <p className="text-[11px] sm:text-xs font-medium text-slate-400 truncate">{label}</p>
+        <p className="text-lg sm:text-xl font-bold text-slate-800">{value}</p>
       </div>
     </div>
   </div>
