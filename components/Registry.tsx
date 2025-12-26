@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo } from 'react';
-import { Search, Plus, UserPlus, Edit2, Trash2, Eye, X, CheckCircle, Users } from 'lucide-react';
+import { Search, Plus, UserPlus, Edit2, Trash2, Eye, X, CheckCircle, Users, Save } from 'lucide-react';
 import { SeniorCitizen, User } from '../types.ts';
 import { storage } from '../storage.ts';
 
@@ -13,7 +13,10 @@ interface RegistryProps {
 const Registry: React.FC<RegistryProps> = ({ seniors, currentUser, onRefresh }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [seniorToEdit, setSeniorToEdit] = useState<SeniorCitizen | null>(null);
   const [selectedSenior, setSelectedSenior] = useState<SeniorCitizen | null>(null);
+  
+  // Form state for both Add and Edit
   const [formData, setFormData] = useState<Partial<SeniorCitizen>>({
     fullName: '',
     birthdate: '',
@@ -47,6 +50,34 @@ const Registry: React.FC<RegistryProps> = ({ seniors, currentUser, onRefresh }) 
     return age;
   };
 
+  const handleAddNew = () => {
+    setFormData({
+      fullName: '',
+      birthdate: '',
+      sex: 'Male',
+      address: '',
+      purok: 'Purok 1',
+      civilStatus: 'Single',
+      contact: '',
+      emergencyContact: { name: '', relationship: '', phone: '' }
+    });
+    setShowAddModal(true);
+  };
+
+  const handleEditClick = (senior: SeniorCitizen) => {
+    setFormData({
+      fullName: senior.fullName,
+      birthdate: senior.birthdate,
+      sex: senior.sex,
+      address: senior.address,
+      purok: senior.purok,
+      civilStatus: senior.civilStatus,
+      contact: senior.contact,
+      emergencyContact: { ...senior.emergencyContact }
+    });
+    setSeniorToEdit(senior);
+  };
+
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
     const age = calculateAge(formData.birthdate as string);
@@ -56,33 +87,56 @@ const Registry: React.FC<RegistryProps> = ({ seniors, currentUser, onRefresh }) 
     }
 
     const currentSeniors = storage.getSeniors();
-    const newSenior: SeniorCitizen = {
-      id: crypto.randomUUID(),
-      scid: `SC-${new Date().getFullYear()}-${String(currentSeniors.length + 1).padStart(3, '0')}`,
-      fullName: formData.fullName as string,
-      birthdate: formData.birthdate as string,
-      age: age,
-      sex: formData.sex as 'Male' | 'Female',
-      address: formData.address as string,
-      purok: formData.purok as string,
-      civilStatus: formData.civilStatus as any,
-      contact: formData.contact as string,
-      emergencyContact: formData.emergencyContact as any,
-      dateRegistered: new Date().toISOString().split('T')[0],
-      medicalInfo: {
-        conditions: [],
-        allergies: [],
-        medications: [],
-        limitations: '',
-        lastUpdated: new Date().toISOString(),
-        updatedBy: currentUser.fullName
-      },
-      assistance: []
-    };
-
-    storage.saveSeniors([...currentSeniors, newSenior]);
-    storage.addAuditLog({ action: 'Registration', details: `Registered new senior: ${newSenior.fullName}` }, currentUser);
-    setShowAddModal(false);
+    
+    if (seniorToEdit) {
+      // Update Existing
+      const updatedSeniors = currentSeniors.map(s => 
+        s.id === seniorToEdit.id ? {
+          ...s,
+          fullName: formData.fullName as string,
+          birthdate: formData.birthdate as string,
+          age: age,
+          sex: formData.sex as 'Male' | 'Female',
+          address: formData.address as string,
+          purok: formData.purok as string,
+          civilStatus: formData.civilStatus as any,
+          contact: formData.contact as string,
+          emergencyContact: formData.emergencyContact as any,
+        } : s
+      );
+      storage.saveSeniors(updatedSeniors);
+      storage.addAuditLog({ action: 'Update Record', details: `Updated details for: ${seniorToEdit.fullName}` }, currentUser);
+      setSeniorToEdit(null);
+    } else {
+      // Create New
+      const newSenior: SeniorCitizen = {
+        id: crypto.randomUUID(),
+        scid: `SC-${new Date().getFullYear()}-${String(currentSeniors.length + 1).padStart(3, '0')}`,
+        fullName: formData.fullName as string,
+        birthdate: formData.birthdate as string,
+        age: age,
+        sex: formData.sex as 'Male' | 'Female',
+        address: formData.address as string,
+        purok: formData.purok as string,
+        civilStatus: formData.civilStatus as any,
+        contact: formData.contact as string,
+        emergencyContact: formData.emergencyContact as any,
+        dateRegistered: new Date().toISOString().split('T')[0],
+        medicalInfo: {
+          conditions: [],
+          allergies: [],
+          medications: [],
+          limitations: '',
+          lastUpdated: new Date().toISOString(),
+          updatedBy: currentUser.fullName
+        },
+        assistance: []
+      };
+      storage.saveSeniors([...currentSeniors, newSenior]);
+      storage.addAuditLog({ action: 'Registration', details: `Registered new senior: ${newSenior.fullName}` }, currentUser);
+      setShowAddModal(false);
+    }
+    
     onRefresh();
   };
 
@@ -109,7 +163,7 @@ const Registry: React.FC<RegistryProps> = ({ seniors, currentUser, onRefresh }) 
           />
         </div>
         <button 
-          onClick={() => setShowAddModal(true)}
+          onClick={handleAddNew}
           className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-xl font-bold transition-all shadow-lg shadow-indigo-600/20 w-full sm:w-auto"
         >
           <UserPlus className="w-5 h-5" />
@@ -151,6 +205,7 @@ const Registry: React.FC<RegistryProps> = ({ seniors, currentUser, onRefresh }) 
                   <Eye className="w-5 h-5" />
                 </button>
                 <button 
+                  onClick={() => handleEditClick(senior)}
                   className="p-2 text-slate-400 hover:text-emerald-600 transition-colors"
                   title="Edit Record"
                 >
@@ -175,12 +230,15 @@ const Registry: React.FC<RegistryProps> = ({ seniors, currentUser, onRefresh }) 
         )}
       </div>
 
-      {showAddModal && (
+      {/* Add/Edit Modal */}
+      {(showAddModal || seniorToEdit) && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
             <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-indigo-50/50">
-              <h3 className="text-xl font-bold text-slate-800">New Senior Registration</h3>
-              <button onClick={() => setShowAddModal(false)} className="p-2 hover:bg-white rounded-full transition-colors">
+              <h3 className="text-xl font-bold text-slate-800">
+                {seniorToEdit ? `Edit Profile: ${seniorToEdit.fullName}` : 'New Senior Registration'}
+              </h3>
+              <button onClick={() => { setShowAddModal(false); setSeniorToEdit(null); }} className="p-2 hover:bg-white rounded-full transition-colors">
                 <X className="w-6 h-6 text-slate-400" />
               </button>
             </div>
@@ -245,6 +303,15 @@ const Registry: React.FC<RegistryProps> = ({ seniors, currentUser, onRefresh }) 
                   </select>
                 </div>
                 <div className="col-span-2">
+                  <label className="block text-sm font-bold text-slate-700 mb-2">Contact Number</label>
+                  <input 
+                    type="text" 
+                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500" 
+                    value={formData.contact}
+                    onChange={(e) => setFormData({...formData, contact: e.target.value})}
+                  />
+                </div>
+                <div className="col-span-2">
                   <label className="block text-sm font-bold text-slate-700 mb-2">Complete Address</label>
                   <input 
                     required 
@@ -254,20 +321,54 @@ const Registry: React.FC<RegistryProps> = ({ seniors, currentUser, onRefresh }) 
                     onChange={(e) => setFormData({...formData, address: e.target.value})}
                   />
                 </div>
+
+                <div className="col-span-2 pt-4 border-t border-slate-100">
+                   <h4 className="text-sm font-bold text-slate-800 mb-4">Emergency Contact Info</h4>
+                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 mb-1">Guardian Name</label>
+                        <input 
+                          type="text" 
+                          className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 text-sm" 
+                          value={formData.emergencyContact?.name}
+                          onChange={(e) => setFormData({...formData, emergencyContact: { ...formData.emergencyContact!, name: e.target.value }})}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 mb-1">Relationship</label>
+                        <input 
+                          type="text" 
+                          className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 text-sm" 
+                          value={formData.emergencyContact?.relationship}
+                          onChange={(e) => setFormData({...formData, emergencyContact: { ...formData.emergencyContact!, relationship: e.target.value }})}
+                        />
+                      </div>
+                      <div className="col-span-2">
+                        <label className="block text-xs font-bold text-slate-500 mb-1">Phone Number</label>
+                        <input 
+                          type="text" 
+                          className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 text-sm" 
+                          value={formData.emergencyContact?.phone}
+                          onChange={(e) => setFormData({...formData, emergencyContact: { ...formData.emergencyContact!, phone: e.target.value }})}
+                        />
+                      </div>
+                   </div>
+                </div>
               </div>
               <div className="mt-8 flex gap-3">
                 <button 
                   type="button" 
-                  onClick={() => setShowAddModal(false)}
+                  onClick={() => { setShowAddModal(false); setSeniorToEdit(null); }}
                   className="flex-1 py-3 border border-slate-200 rounded-xl font-bold text-slate-600 hover:bg-slate-50 transition-colors"
                 >
                   Cancel
                 </button>
                 <button 
                   type="submit" 
-                  className="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-600/20"
+                  className="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-600/20 flex items-center justify-center gap-2"
                 >
-                  Register Senior
+                  {seniorToEdit ? <Save className="w-5 h-5" /> : <UserPlus className="w-5 h-5" />}
+                  {seniorToEdit ? 'Update Record' : 'Register Senior'}
                 </button>
               </div>
             </form>
