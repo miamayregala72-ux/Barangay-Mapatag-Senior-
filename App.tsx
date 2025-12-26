@@ -13,7 +13,9 @@ import {
   Bell,
   Settings,
   ShieldCheck,
-  User as UserIcon
+  User as UserIcon,
+  Lock,
+  ArrowLeft
 } from 'lucide-react';
 import { User, UserRole, ViewType, SeniorCitizen, AuditLog } from './types.ts';
 import { storage, seedInitialData } from './storage.ts';
@@ -23,6 +25,12 @@ import MedicalRecords from './components/MedicalRecords.tsx';
 import Assistance from './components/Assistance.tsx';
 import AuditTrail from './components/AuditTrail.tsx';
 
+const ROLE_PASSWORDS: Record<UserRole, string> = {
+  [UserRole.ADMIN]: 'admin123',
+  [UserRole.STAFF]: 'staff123',
+  [UserRole.HEALTH_WORKER]: 'health123'
+};
+
 const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(storage.getCurrentUser());
   const [activeView, setActiveView] = useState<ViewType>('DASHBOARD');
@@ -30,22 +38,42 @@ const App: React.FC = () => {
   const [seniors, setSeniors] = useState<SeniorCitizen[]>([]);
   const [logs, setLogs] = useState<AuditLog[]>([]);
 
+  // Login State
+  const [pendingRole, setPendingRole] = useState<UserRole | null>(null);
+  const [password, setPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
+
   useEffect(() => {
     seedInitialData();
     setSeniors(storage.getSeniors());
     setLogs(storage.getAuditLogs());
   }, []);
 
-  const handleLogin = (role: UserRole) => {
-    const mockUser: User = {
-      id: role.toLowerCase(),
-      username: role.toLowerCase(),
-      role: role,
-      fullName: `${role.charAt(0) + role.slice(1).toLowerCase()} Officer`
-    };
-    storage.setCurrentUser(mockUser);
-    setCurrentUser(mockUser);
-    storage.addAuditLog({ action: 'Login', details: `User logged in as ${role}` }, mockUser);
+  const handleRoleSelect = (role: UserRole) => {
+    setPendingRole(role);
+    setLoginError('');
+    setPassword('');
+  };
+
+  const handleLoginSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!pendingRole) return;
+
+    if (password === ROLE_PASSWORDS[pendingRole]) {
+      const mockUser: User = {
+        id: pendingRole.toLowerCase(),
+        username: pendingRole.toLowerCase(),
+        role: pendingRole,
+        fullName: `${pendingRole.charAt(0) + pendingRole.slice(1).toLowerCase()} Officer`
+      };
+      storage.setCurrentUser(mockUser);
+      setCurrentUser(mockUser);
+      storage.addAuditLog({ action: 'Login', details: `User logged in as ${pendingRole}` }, mockUser);
+      setPendingRole(null);
+      setPassword('');
+    } else {
+      setLoginError('Invalid password. Please try again.');
+    }
   };
 
   const handleLogout = () => {
@@ -64,49 +92,91 @@ const App: React.FC = () => {
   if (!currentUser) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600 p-6">
-        <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full">
+        <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full transition-all duration-300">
           <div className="text-center mb-8">
             <div className="bg-indigo-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
               <ShieldCheck className="w-8 h-8 text-indigo-600" />
             </div>
             <h1 className="text-2xl font-bold text-slate-800">Barangay Mapatag</h1>
-            <p className="text-slate-500">Senior Citizen Profiling System</p>
+            <p className="text-slate-500 text-sm">Senior Citizen Profiling System</p>
           </div>
           
-          <div className="space-y-4">
-            <button 
-              onClick={() => handleLogin(UserRole.ADMIN)}
-              className="w-full flex items-center justify-between p-4 bg-slate-50 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-200 rounded-xl transition-all group"
-            >
-              <div className="flex items-center gap-3">
-                <Settings className="w-5 h-5 text-slate-400 group-hover:text-indigo-500" />
-                <span className="font-semibold text-slate-700">Administrator</span>
+          {!pendingRole ? (
+            <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-300">
+              <p className="text-center text-sm font-medium text-slate-400 mb-2">Select your access level</p>
+              <button 
+                onClick={() => handleRoleSelect(UserRole.ADMIN)}
+                className="w-full flex items-center justify-between p-4 bg-slate-50 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-200 rounded-xl transition-all group"
+              >
+                <div className="flex items-center gap-3">
+                  <Settings className="w-5 h-5 text-slate-400 group-hover:text-indigo-500" />
+                  <span className="font-semibold text-slate-700">Administrator</span>
+                </div>
+                <Plus className="w-4 h-4 text-slate-400" />
+              </button>
+              <button 
+                onClick={() => handleRoleSelect(UserRole.STAFF)}
+                className="w-full flex items-center justify-between p-4 bg-slate-50 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-200 rounded-xl transition-all group"
+              >
+                <div className="flex items-center gap-3">
+                  <Users className="w-5 h-5 text-slate-400 group-hover:text-emerald-500" />
+                  <span className="font-semibold text-slate-700">Barangay Staff</span>
+                </div>
+                <Plus className="w-4 h-4 text-slate-400" />
+              </button>
+              <button 
+                onClick={() => handleRoleSelect(UserRole.HEALTH_WORKER)}
+                className="w-full flex items-center justify-between p-4 bg-slate-50 hover:bg-rose-50 border border-slate-200 hover:border-rose-200 rounded-xl transition-all group"
+              >
+                <div className="flex items-center gap-3">
+                  <HeartPulse className="w-5 h-5 text-slate-400 group-hover:text-rose-500" />
+                  <span className="font-semibold text-slate-700">Health Worker</span>
+                </div>
+                <Plus className="w-4 h-4 text-slate-400" />
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={handleLoginSubmit} className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+              <div className="flex items-center gap-2 text-indigo-600 mb-2">
+                <button 
+                  type="button" 
+                  onClick={() => setPendingRole(null)}
+                  className="p-1 hover:bg-indigo-50 rounded-lg transition-colors"
+                >
+                  <ArrowLeft className="w-5 h-5" />
+                </button>
+                <span className="font-bold uppercase text-xs tracking-wider">Logging in as {pendingRole}</span>
               </div>
-              <Plus className="w-4 h-4 text-slate-400" />
-            </button>
-            <button 
-              onClick={() => handleLogin(UserRole.STAFF)}
-              className="w-full flex items-center justify-between p-4 bg-slate-50 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-200 rounded-xl transition-all group"
-            >
-              <div className="flex items-center gap-3">
-                <Users className="w-5 h-5 text-slate-400 group-hover:text-emerald-500" />
-                <span className="font-semibold text-slate-700">Barangay Staff</span>
+              
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-2">Access Password</label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <input 
+                    autoFocus
+                    type="password"
+                    placeholder="Enter password..."
+                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                </div>
+                {loginError && <p className="mt-2 text-xs text-rose-500 font-medium">{loginError}</p>}
+                <p className="mt-4 text-[10px] text-slate-400 bg-slate-50 p-2 rounded-lg border border-slate-100">
+                  <span className="font-bold">Tip:</span> Use <span className="text-slate-600 font-mono">{ROLE_PASSWORDS[pendingRole]}</span> for this demo.
+                </p>
               </div>
-              <Plus className="w-4 h-4 text-slate-400" />
-            </button>
-            <button 
-              onClick={() => handleLogin(UserRole.HEALTH_WORKER)}
-              className="w-full flex items-center justify-between p-4 bg-slate-50 hover:bg-rose-50 border border-slate-200 hover:border-rose-200 rounded-xl transition-all group"
-            >
-              <div className="flex items-center gap-3">
-                <HeartPulse className="w-5 h-5 text-slate-400 group-hover:text-rose-500" />
-                <span className="font-semibold text-slate-700">Health Worker</span>
-              </div>
-              <Plus className="w-4 h-4 text-slate-400" />
-            </button>
-          </div>
+
+              <button 
+                type="submit"
+                className="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-600/20"
+              >
+                Verify & Continue
+              </button>
+            </form>
+          )}
           
-          <p className="mt-8 text-xs text-center text-slate-400">
+          <p className="mt-8 text-[10px] text-center text-slate-400 uppercase tracking-widest font-bold">
             &copy; 2026 Barangay Mapatag IT Services
           </p>
         </div>
