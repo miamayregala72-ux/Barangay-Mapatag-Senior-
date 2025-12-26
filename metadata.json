@@ -1,0 +1,7 @@
+{
+  "name": "Barangay Mapatag Senior Profiling System",
+  "description": "A comprehensive digital platform for managing senior citizen records, medical information, and benefit distributions for Barangay Mapatag.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
